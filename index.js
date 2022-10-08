@@ -1,25 +1,44 @@
-const dotenv = require('dotenv');
+const dotenv = require("dotenv");
 dotenv.config();
 
-const express = require('express');
-const mongoose = require('mongoose');
-const path = require('path');
+const express = require("express");
+const mongoose = require("mongoose");
+const path = require("path");
+const Movie = require("./models/movie");
 
 const app = express();
 
-app.set('view engine', 'hbs');
-app.set('views', path.join(__dirname, 'views'));
+app.set("view engine", "hbs");
+app.set("views", path.join(__dirname, "views"));
 
-app.use(express.static('public'));
+app.use(express.static("public"));
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (req, res, next) => {
-  res.render('home');
+app.get("/", (req, res, next) => {
+  res.render("home");
+});
+
+app.get("/movies", (req, res, next) => {
+  Movie.find({})
+    .then(movies => {
+      res.render("movies", { movies: movies });
+    })
+    .catch(err => next(err));
+});
+
+app.get("/movies/:id", (req, res, next) => {
+  const id = req.params.id;
+
+  Movie.findById(id)
+    .then(movie => {
+      res.render("movie-details", { movie });
+    })
+    .catch(err => next(err));
 });
 
 app.use((error, req, res, next) => {
   console.log(error);
-  res.render('error');
+  res.render("error");
 });
 
 mongoose
@@ -27,7 +46,7 @@ mongoose
   .then(() => {
     app.listen(process.env.PORT);
   })
-  .catch((error) => {
-    console.log('There was an error connecting to the database');
+  .catch(error => {
+    console.log("There was an error connecting to the database");
     console.log(error);
   });
